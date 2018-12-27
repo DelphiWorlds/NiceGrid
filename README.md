@@ -1,7 +1,7 @@
 NiceGrid
 ========
 
-
+** NOTE ** This fork has had Nedko Ivanov's changes removed 
 
 Description of NiceGrid /author Priyatna/
 
@@ -23,20 +23,16 @@ Since it is a new component, there are several main differences between NiceGrid
 
   * FixedRows -> Header, FixedCols -> Gutter. 
 
-2014-10-15, author Nedko Ivanov
-
- * Added Options property (ngoMultiCellSelect, ngoThemed, ngoExcel)
-   * ngoMultiCellSelect - allows multi cell select
-   * ngoThemed - use Windows theme support instead of original owner drawn selection
-   * ngoExcel - enable/disable excel like capabilities (the small dot on the right bottom selection corner)
- * Added property EditorType to Column : (ngetEdit, ngetEditInteger, ngetEditFloat, ngetCombo, ngetComboNoEditText)
- * Added key F2 for begin edit
- * Added event OnEditorCreating and OnEditorCreated (allows to fill in lines in combo box cell editor)
- * Removed component TNiceGridSync
- * Removed additinal support for caret
- * Added event OnFormatText to both grid and column objects
- * Added event OnGetCellColor
- * Added event OnDrawBackground - allows the app to draw the background itself instead by the default grid code
- * Added enumerator for enumerating grid rows with the "for-in" statement
-
 For sample see BasicDemo
+
+Change history:
+
+2018-12-28:
+
+* Reverted NiceGrid.pas to the original version from http://www.priyatna.org/nicegrid.php
+* Modified CopyToClipboard and CutFromClipboard to add tab character only if s is non-blank, since the first column in the selection may not be visible
+* Modified TNiceGrid.WMHScroll and TNiceGrid.WMVScroll to use HiWord(TMessage(Msg).WParam) for the Pos value because in TWMScroll, the Pos value is a SmallInt, turning values > 32768 into a negative value
+
+
+
+
