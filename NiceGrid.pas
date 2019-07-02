@@ -507,7 +507,8 @@ implementation
 {$R NiceCursors.res}
 
 uses
-  Math;
+  Math,
+  Vcl.Themes;
 
 const
   crPlus = 101;
@@ -525,6 +526,8 @@ const
 { TNiceGrid }
 
 constructor TNiceGrid.Create(AOwner: TComponent);
+var
+  LStyle: TCustomStyleServices;
 begin
   inherited Create(AOwner);
   Width := 200;
@@ -544,16 +547,22 @@ begin
 
   FFlat := True;
   FEnabled := True;
-  FColor := clWindow;
-  FAlternateColor := clWindow;
-  FGridColor := clBtnFace;
+  FColor := StyleServices.GetStyleColor(TStyleColor.scGrid); // clWindow;
+  FAlternateColor := StyleServices.GetStyleColor(TStyleColor.scGrid); // clWindow;
+  FGridColor := StyleServices.GetStyleColor(TStyleColor.scGrid); // clBtnFace;
   FShowGrid := True;
-  FHeaderColor := clBtnface;
-  FHeaderLightColor := clBtnHighlight;
-  FHeaderDarkColor := clBtnShadow;
+  LStyle := StyleServices;
+  // FHeaderColor := clBtnface;
+  // FHeaderLightColor := clBtnHighlight;
+  // FHeaderDarkColor :=   clBtnShadow;
+  //!!!! Move these to Paint
+  LStyle.GetElementColor(LStyle.GetElementDetails(tgFixedCellNormal), ecFillColor, FHeaderColor);
+  LStyle.GetElementColor(LStyle.GetElementDetails(tgFixedCellNormal), ecGlowColor, FHeaderLightColor);
+  LStyle.GetElementColor(LStyle.GetElementDetails(tgFixedCellNormal), ecBorderColor, FHeaderDarkColor);
   FHeaderFont := TFont.Create;
   FHeaderFont.OnChange := HeaderFontChange;
-  FSelectionColor := $00CAFFFF;
+  // FSelectionColor := $00CAFFFF;
+  LStyle.GetElementColor(LStyle.GetElementDetails(tgCellSelected), ecFillColor, FSelectionColor);
 
   FFooterFont := TFont.Create;
   FFooterFont.OnChange := FooterFontChange;
@@ -1033,6 +1042,7 @@ procedure TNiceGrid.DrawFixCell(Rc: TRect; Str: string; AFont: TFont; AEvent: TO
 var
   Rt: TRect;
   Handled: Boolean;
+  LColor: TColor;
 begin
   Handled := False;
   with Canvas do
@@ -1044,8 +1054,13 @@ begin
     Brush.Style := bsSolid;
     Brush.Color := FHeaderColor;
     Font.Assign(AFont);
-    if not FEnabled
-      then Font.Color := FHeaderDarkColor;
+    if FEnabled then
+    begin
+      StyleServices.GetElementColor(StyleServices.GetElementDetails(tgFixedCellNormal), ecTextColor, LColor);
+      Font.Color := LColor;
+    end
+    else
+      Font.Color := FHeaderDarkColor; //!!!!
     if Assigned(AEvent)
       then AEvent(Self, Canvas, Rc, Str, Handled);
     if Handled
@@ -1173,6 +1188,7 @@ var
   R, Rc, Dummy: TRect;
   Column: TNiceColumn;
   Handled: Boolean;
+  LColor: TColor;
 begin
   Handled := False;
   Rc := GetCellRect(x, y);
@@ -1184,24 +1200,29 @@ begin
     with Canvas do
     begin
       Font.Assign(Column.Font);
-      if not FEnabled
-        then Font.Color := FGridColor;
+      if FEnabled then
+      begin
+        StyleServices.GetElementColor(StyleServices.GetElementDetails(tgCellNormal), ecTextColor, LColor);
+        Font.Color := LColor;
+      end
+      else
+        Font.Color := FGridColor;
       Pen.Color := FGridColor;
       Brush.Color := GetCellColor(X, Y);
 
-      if Assigned(FOnDrawCell)
-        then FOnDrawCell(Self, Canvas, X, Y, Rc, Handled);
+      if Assigned(FOnDrawCell) then
+        FOnDrawCell(Self, Canvas, X, Y, Rc, Handled);
 
       if not Handled then
       begin
         Brush.Style := bsSolid;
-        if FShowGrid
-          then Rectangle(Rc)
-          else FillRect(Rc);
+        if FShowGrid then
+          Rectangle(Rc)
+        else
+          FillRect(Rc);
         Brush.Style := bsClear;
         InflateRect(Rc, -4, -2);
-        DrawString(Canvas, SafeGetCell(x, y), Rc, Column.HorzAlign,
-          Column.VertAlign, False);
+        DrawString(Canvas, SafeGetCell(x, y), Rc, Column.HorzAlign, Column.VertAlign, False);
       end;
 
     end;
